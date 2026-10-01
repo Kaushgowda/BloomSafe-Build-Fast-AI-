@@ -656,5 +656,7 @@ else:
     print("WARNING: " + KEY_PROBLEM)
     print("Folder checked: " + HERE)
     print("Without a key the coach uses basic follow-ups, and resumes can only be read from .docx files.")
-print("Open http://localhost:8000 in Chrome (model: %s)" % MODEL)
-ThreadingHTTPServer(("localhost", 8000), H).serve_forever()
+
+if __name__ == "__main__":
+    print("Open http://localhost:8000 in Chrome (model: %s)" % MODEL)
+    ThreadingHTTPServer(("localhost", 8000), H).serve_forever()
