@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Performance Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7ff;--panel:#ffffff;--ink:#1c1e3d;--mute:#6a6f96;--acc:#5b5bf0;--acc2:#ff5fa2;--acc3:#22c7e8;--ok:#12b981;--warn:#f5a524;--bad:#ff5fa2;--line:#e3e6fb;--glow:rgba(91,91,240,.2);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17182f;--panel:#22244a;--ink:#f3f4ff;--mute:#a4a9d6;--acc:#8b8cff;--line:#33366a;--glow:rgba(139,140,255,.28)}}
+:root[data-theme="dark"]{--bg:#17182f;--panel:#22244a;--ink:#f3f4ff;--mute:#a4a9d6;--acc:#8b8cff;--line:#33366a;--glow:rgba(139,140,255,.28)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.5;background:radial-gradient(800px 420px at 8% -8%,var(--glow),transparent),radial-gradient(700px 400px at 100% 0,rgba(255,95,162,.16),transparent),var(--bg) fixed;transition:background-color .3s,color .3s}
+main{max-width:720px;margin:0 auto;padding:18px 18px 60px}
+.top{display:flex;justify-content:flex-end;gap:8px}
+.tog{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.tog:hover{transform:translateY(-1px);box-shadow:0 4px 14px var(--glow)}
+h1{font-size:clamp(34px,7vw,56px);line-height:1.02;margin:6px 0 8px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 22px;max-width:52ch}
+.modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.modes button{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:10px 18px;border-radius:999px;font:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.modes button:hover{transform:translateY(-2px);box-shadow:0 6px 16px var(--glow)}
+.modes button[aria-pressed=true]{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-color:transparent;font-weight:600}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.hero{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
+.hero b{font-weight:600}.lvl{height:6px;width:180px;max-width:60vw;background:var(--line);border-radius:4px;margin-top:6px;overflow:hidden}.lvl i{display:block;height:100%;width:0;background:var(--ok);transition:width .08s}
+.orb{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc3));position:relative;flex:none;transition:transform .3s}
+.orb::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--acc);opacity:0}
+.orb[data-s=listening]::after{animation:ring 1.4s infinite}
+.orb[data-s=speaking]{background:linear-gradient(135deg,var(--acc2),var(--acc))}
+.orb[data-s=speaking]::after{border-color:var(--acc2);animation:ring 1s infinite}
+.orb[data-s=you]{transform:scale(1.18);background:linear-gradient(135deg,var(--ok),var(--acc3))}
+@keyframes ring{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.55);opacity:0}}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.meter{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 16px;box-shadow:0 10px 30px var(--glow)}
+.big{font-size:64px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.big small{font-size:16px;font-weight:400;color:var(--mute);margin-left:6px;letter-spacing:0}
+.band{position:relative;height:12px;border-radius:8px;background:var(--line);margin:16px 0 6px}
+.zone{position:absolute;left:50%;width:16.7%;top:0;bottom:0;background:var(--ok);opacity:.4;border-radius:8px}
+.dot{position:absolute;top:-4px;width:20px;height:20px;border-radius:50%;background:var(--acc);border:3px solid var(--panel);box-shadow:0 2px 8px var(--glow);left:0;transform:translateX(-50%);transition:left .4s,background .3s}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.stats{display:flex;gap:22px;margin-top:12px;font-size:14px;color:var(--mute)}.stats b{color:var(--ink);font-size:18px}
+.zl{margin-top:10px;font-weight:600;font-size:15px}
+#log{min-height:130px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.msg{padding:10px 14px;border-radius:14px;max-width:88%;background:var(--panel);border:1px solid var(--line);animation:in .25s}
+.msg.me{align-self:flex-end;background:var(--glow);border-color:transparent}
+.msg.ai{border-left:4px solid var(--acc2)}
+textarea{width:100%;min-height:84px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px;font:inherit;resize:vertical;transition:box-shadow .2s}
+textarea:focus{box-shadow:0 0 0 4px var(--glow)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.btn{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:0;padding:12px 22px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 6px 16px var(--glow);transition:transform .15s,box-shadow .15s}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 22px var(--glow)}
+.btn:active:not(:disabled){transform:scale(.96)}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:default}
+#hint{color:var(--mute);font-size:13px;margin-top:8px}
+#resume{display:none;background:var(--panel);border:1px dashed var(--acc);border-radius:16px;padding:16px 18px;margin:0 0 16px;animation:in .3s}
+#resume b{font-weight:600}#resume .rs{font-size:14px;color:var(--mute);margin-top:6px}#resume .rs.err{color:var(--bad)}#resume .rs.ok{color:var(--ok)}
+#resume .row{margin-top:10px}#resume input[type=file]{display:none}
+#report{display:none;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:22px;box-shadow:0 10px 30px var(--glow);animation:in .4s}
+#report h2{margin:0 0 12px;font-size:28px}
+.ring{width:112px;height:112px;border-radius:50%;background:conic-gradient(var(--acc) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;margin-bottom:12px}
+.ring span{width:86px;height:86px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:34px;font-weight:800}
+.wk{border-top:1px solid var(--line);padding:12px 0}.wk b{color:var(--bad)}
+.mute{color:var(--mute);font-size:13px}
+#pm[aria-pressed=true]{background:linear-gradient(135deg,var(--acc2),var(--warn));color:#fff;border-color:transparent;font-weight:600}
+.pmrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:-4px 0 16px}
+#speechopts{display:none;background:var(--panel);border:1px dashed var(--acc);border-radius:16px;padding:14px 18px;margin:0 0 16px;animation:in .3s}
+#speechopts .row{margin-top:8px;align-items:center}
+input[type=text]{flex:1;min-width:200px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit}
+input[type=text]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.msg.int{border-left-color:var(--warn)}
+#camwrap{display:flex;gap:12px;align-items:center;margin:0 0 16px;animation:in .3s}
+#camwrap[hidden]{display:none}
+#camv{width:160px;height:120px;object-fit:cover;border-radius:14px;border:1px solid var(--line);background:#000;transform:scaleX(-1)}
+#camst{font-weight:600}
+.bars{display:flex;align-items:flex-end;gap:3px;height:70px;margin-top:8px;border-bottom:1px solid var(--line)}
+.bars i{flex:1;min-width:4px;max-width:28px;border-radius:3px 3px 0 0;min-height:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body><main>
+<div class="top"><select class="tog" id="lang" aria-label="Speech recognition accent"><option value="en-US">🇺🇸 US English</option><option value="en-IN">🇮🇳 Indian English</option><option value="en-GB">🇬🇧 UK English</option><option value="en-AU">🇦🇺 Australian English</option></select><button class="tog" id="tog" aria-label="Change theme">🌗 Auto</button></div>
+<h1>Practice the moment before it counts.</h1>
+<p class="sub">Pick a situation. The coach plays the other side, listens to how you say it as well as what you say, then builds your next round around your weak spots. Headphones work best.</p>
+<div class="modes" role="group" aria-label="Practice mode"></div>
+<div class="pmrow"><button class="tog" id="cm" aria-pressed="false">📷 Camera: off</button><button class="tog" id="pm" aria-pressed="false">🧊 Pressure Mode: off</button><span class="mute" id="pmh"></span></div>
+<div id="camwrap" hidden><video id="camv" autoplay muted playsinline></video><div><div id="camst" class="mute"></div><div class="mute">Lighting and movement are analysed on your device. A snapshot every 15 seconds while you speak goes to the AI coach for the review (only if you set one up) and is not stored.</div></div></div>
+<div id="speechopts"><b>🎤 Speech setup</b> <span class="mute">(optional, you can set it while you speak)</span>
+ <div class="row"><input type="text" id="sptopic" maxlength="200" placeholder="Topic or purpose, e.g. investor pitch for a study app" aria-label="Speech topic"><select class="tog" id="sptarget" aria-label="Target length"><option value="0">No time target</option><option value="60">Target 1 min</option><option value="120">Target 2 min</option><option value="180">Target 3 min</option><option value="300">Target 5 min</option></select></div>
+ <div class="row"><button class="btn ghost" id="share" hidden>🖥️ Share screen</button><span class="mute" id="shs"></span></div></div>
+
+<div class="hero"><div class="orb" id="orb" data-s="idle"></div><div><b id="state">Ready when you are</b><div class="lvl"><i id="lvl"></i></div><div id="dbg" style="font-size:13px;color:var(--mute);margin-top:6px">Tap the button to start.</div><div id="brain" style="font-size:13px;margin-top:4px;color:var(--mute)">Checking coach brain...</div></div></div>
+<div class="meter" aria-live="off">
+ <div class="big"><span id="wpm">0</span><small>words per minute</small></div>
+ <div class="band"><div class="zone"></div><div class="dot" id="dot"></div></div>
+ <div class="scale"><span>slow</span><span>steady zone, 120 to 160</span><span>rushed</span></div>
+ <div class="stats"><span id="tmw" style="display:none"><b id="tm">0:00</b> <span id="tmt">time</span></span><span><b id="wc">0</b> words</span><span><b id="fc">0</b> filler words</span><span><b id="hc">0</b> hedges</span></div>
+ <div class="zl" id="zl">Start speaking to see your pace</div>
+</div>
+
+<div id="resume"><b>📄 Resume for the interview</b>
+ <div class="rs" id="rs">The interview is built only from your resume. Accepted: PDF, DOC, DOCX or TXT (max 5 MB), or paste the text below. Works with no AI key.</div>
+ <div class="row"><label class="btn" for="rfile" id="rlab" tabindex="0">Choose resume</label><input type="file" id="rfile" accept=".pdf,.doc,.docx,.txt,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></div>
+ <textarea id="rpaste" rows="3" maxlength="12000" placeholder="Or paste your resume text here" aria-label="Paste resume text" style="margin-top:8px;height:auto"></textarea><div class="row" style="margin-top:6px"><button class="btn ghost" id="rpbtn">Use pasted text</button></div></div>
+<div id="log" aria-live="polite"></div>
+<textarea id="ans" readonly placeholder="Your words appear here as you speak. Nothing to type." aria-label="Live transcript"></textarea>
+<div class="row">
+ <button class="btn" id="start">🎙️ Tap once to turn on voice</button>
+ <button class="btn" id="done" hidden>✅ Finish speech</button>
+ <button class="btn ghost" id="end" hidden>↩ Start over</button>
+</div>
+<div id="hint">After one tap, everything is voice. The line under the status tells you what the mic is doing. Say "interview", "viva", "negotiation", "speech" or "demo" to begin. In speech and demo mode just talk and say "finish speech" when done. Say "camera on" or "camera off", "pressure on" or "calm mode" to switch Pressure Mode. Any time: "repeat", "skip", "end session" or "start over". Pause for about three seconds to submit an answer, or talk over the coach to interrupt.</div>
+<section id="report" aria-live="polite"></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const MODES={
+ interview:{e:'💼',n:'Interview',qs:[]},
+ viva:{e:'🎓',n:'Viva',qs:["Explain your project in two sentences.","Why did you choose this approach over the alternatives?","What is the biggest limitation of your work?","If you had one more month, what would you change?"]},
+ negotiation:{e:'🤝',n:'Negotiation',qs:["I can offer ten percent below your ask. Why should I go higher?","Our budget is fixed. What else would make this deal work for you?","Other candidates asked for less. Justify your number.","Final offer. Do we have a deal?"]},
+ speech:{e:'🎤',n:'Speech',qs:[]},
+ demo:{e:'🖥️',n:'Demo',qs:[]}
+};
+const FILL=/\b(um+|uh+|erm|you know|i mean|basically|literally)\b/gi;
+const HEDGE=/\b(maybe|i think|i guess|probably|not sure|sort of|kind of|perhaps)\b/gi;
+let mode='interview',qi=0,fu=false,cur='',ans=[],t0=0,rec=null,active=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+Object.keys(MODES).forEach(k=>{const b=document.createElement('button');b.textContent=MODES[k].e+' '+MODES[k].n;b.dataset.k=k;b.setAttribute('aria-pressed',k===mode);
+ b.onclick=()=>{if(active){pick(k);return}mode=k;document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.k===k));showOpts(k==='speech'||k==='demo')};
+ $('.modes').appendChild(b)});
+
+function msg(c,t){const d=document.createElement('div');d.className='msg '+c;d.textContent=t;$('#log').appendChild(d);$('#log').scrollTop=1e6}
+function endSpeak(id){if(id!==sid)return;clearTimeout(spkTm);speaking=false;if(pi&&!pi.end)pi.end=Date.now();if(phase==='speak')idleSince=Date.now();if(active){st('listening');stopRec()}}
+function say(t,pre){msg(pre?'ai int':'ai',(pre||'')+t);busy=false;const id=++sid;speaking=true;filter=true;spoken=new Set(t.toLowerCase().match(/[a-z']+/g)||[]);
+ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);window._u=u;u.lang=$('#lang').value;u.rate=1.02;
+  u.onstart=()=>st('speaking');u.onend=u.onerror=()=>endSpeak(id);speechSynthesis.speak(u);
+  clearTimeout(spkTm);spkTm=setTimeout(()=>endSpeak(id),t.length*100+4000)}catch(e){speaking=false}}
+function isEcho(seg){const w=seg.toLowerCase().match(/[a-z']+/g)||[];if(!w.length)return true;return w.filter(x=>spoken.has(x)).length/w.length>=(w.length<4?0.9:0.75)}
+let llmOn=false,llmWhy='',resumeText='',resumeName='',uploading=false;
+fetch('/api/status').then(r=>r.json()).then(j=>{llmOn=!!j.llm;llmWhy=j.reason||'';$('#brain').textContent=j.llm?'Adaptive AI coach: on ('+(j.provider||'AI')+')':'Offline coach: on. No API key needed.'+(llmWhy?' '+llmWhy:'');$('#brain').style.color=j.llm?'':(llmWhy?'var(--warn)':'var(--ok)')}).catch(()=>{$('#brain').textContent='Offline coach. To upload a resume file, run server.py and open http://localhost:8000.'});
+function dbg(t){$('#dbg').textContent=t}
+function ask(q){cur=q;hist.push({role:'coach',text:q});armInt();say(q)}
+function st(s){$('#orb').dataset.s=s;const L={idle:'Ready when you are',speaking:'Coach is speaking. Talk to interrupt.',listening:'Listening, your turn',you:'Hearing you'};if(phase==='speak'){L.listening='Coach is listening. Keep going.';L.you='Hearing your speech'}$('#state').textContent=L[s]}
+function zone(w){const z=!w?['var(--acc)','Start speaking to see your pace']:w<120?['var(--warn)','A little slow. Add some energy.']:w>160?['var(--bad)','Rushing. Breathe and slow down.']:['var(--ok)','Nice steady pace.'];$('#dot').style.background=z[0];$('#zl').textContent=z[1]}
+const TH=['auto','light','dark'],TL=['🌗 Auto','☀️ Light','🌙 Dark'];let ti=0;
+(function(){const L=$('#lang');let v='';try{v=localStorage.getItem('coachLang')||''}catch(e){}if(!v){const n=(navigator.language||'').replace('_','-');v=[...L.options].some(o=>o.value===n)?n:'en-US'}L.value=v;
+ L.onchange=()=>{try{localStorage.setItem('coachLang',L.value)}catch(e){}if(active)startRec()}})();
+$('#tog').onclick=()=>{ti=(ti+1)%3;const m=TH[ti];m==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=m;$('#tog').textContent=TL[ti]};
+
+function startRec(){
+ if(!SR){$('#hint').textContent='Voice control needs a browser with speech recognition. Open this page in Chrome.';return}
+ try{if(rec){rec.onend=null;rec.abort()}}catch(x){}
+ rec=new SR();rec.continuous=true;rec.interimResults=true;rec.lang=$('#lang').value;
+ rec.onresult=e=>{
+  const segs=[];for(let i=0;i<e.results.length;i++)segs.push(e.results[i][0].transcript.trim());
+  const keep=segs.filter(x=>x&&!(filter&&isEcho(x)));
+  if(!keep.length||busy)return;
+  if(speaking){if(Date.now()<grace)return;sid++;speaking=false;clearTimeout(spkTm);try{speechSynthesis.cancel()}catch(x){}}
+  const now=Date.now();
+  if(phase==='speak'){
+   let txt=(spBase+' '+keep.join(' ')).trim();const m=txt.match(ENDRE);
+   if(!spStart)spStart=now;
+   if(lastWord){const g=now-lastWord;if(g>=6000)spDead++;else if(g>=1500)spPause++}
+   lastWord=now;
+   if(m){txt=txt.slice(0,m.index).trim();$('#ans').value=txt;return finishSpeech()}
+   st('you');$('#ans').value=txt;dbg('Listening to your speech. Say "finish speech" when you are done.');return}
+  st('you');if(!t0)t0=now;if(pi&&pi.lat==null){pi.lat=pi.end?(now-pi.end)/1000:0;pi.bar=!pi.end}
+  $('#ans').value=keep.join(' ');dbg('Heard you.');
+  clearTimeout(tm);tm=setTimeout(handle,(phase==='run'||phase==='qa')?2800:1300)};
+ rec.onend=()=>{if(phase==='speak')spBase=$('#ans').value.trim();dbg('Restarting mic...');restart()};
+ rec.onstart=()=>{gotStart=true;filter=speaking;dbg('Mic is on. Say something.')};
+ rec.onaudiostart=()=>{dbg('Your mic is receiving audio.');$('#lvl').style.width='30%'};
+ rec.onspeechstart=()=>{dbg('Speech detected.');$('#lvl').style.width='100%'};
+ rec.onspeechend=()=>{$('#lvl').style.width='30%'};
+ rec.onerror=e=>{dbg('Mic event: '+e.error);if(e.error==='no-speech'||e.error==='aborted')return;const bl=e.error==='not-allowed'||e.error==='service-not-allowed';$('#hint').textContent=bl?BLOCKED:'Microphone problem ('+e.error+'). Check your mic and reload.';active=false;phase='off';$('#start').hidden=false;$('#start').textContent='🎙️ Retry microphone';st('idle')};
+ try{rec.start()}catch(e){}
+}
+function restart(){if(!active)return;clearTimeout(rt);rt=setTimeout(()=>{try{rec.start()}catch(x){}},200)}
+function stopRec(){try{rec&&rec.abort()}catch(e){}}
+
+$('#ans').addEventListener('input',()=>{if(!t0)t0=Date.now()});
+const cnt=t=>t?t.split(/\s+/).length:0;
+function fmt(x){x=Math.max(0,Math.round(x));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')}
+function spText(){return (spDone.join(' ')+' '+(phase==='speak'?$('#ans').value:'')).trim()}
+let lastTick=Date.now(),bAct=0,bW0=0,thr=Infinity,idleSince=0;
+setInterval(()=>{
+ const now=Date.now(),dt=Math.min(2,(now-lastTick)/1000);lastTick=now;
+ const sp=phase==='speak'||phase==='qa',t=sp?spText():$('#ans').value.trim(),w=cnt(t);
+ $('#wc').textContent=w;$('#fc').textContent=(t.match(FILL)||[]).length;$('#hc').textContent=(t.match(HEDGE)||[]).length;
+ $('#tmw').style.display=(sp||(phase==='end'&&(mode==='speech'||mode==='demo')))?'':'none';
+ let wpm=0;
+ if(sp){
+  if(phase==='speak'){
+   spWin.push([now,w]);while(spWin.length&&now-spWin[0][0]>20000)spWin.shift();
+   const a0=spWin[0],m=(now-a0[0])/60000;if(m>.05&&w-a0[1]>=3)wpm=Math.round((w-a0[1])/m);
+   if(spStart){bAct+=dt;if(bAct>=15){spBuckets.push(Math.max(0,Math.round((w-bW0)*60/bAct)));bW0=w;bAct=0}}
+   const last=Math.max(lastWord,idleSince);if(!speaking&&last&&now-last>25000&&w>=10)finishSpeech();if(dvid&&phase==='speak'&&spStart&&now-lastShot>=20000)snap()}
+  const el=spSecs+(phase==='speak'&&spStart?(now-spStart)/1000:0),tg=parseInt($('#sptarget').value)||0;
+  $('#tm').textContent=fmt(el);$('#tmt').textContent=tg?'of '+fmt(tg):'time';
+  $('#tm').style.color=!tg?'':el>tg*1.1?'var(--bad)':el>tg*.9?'var(--warn)':'var(--ok)'}
+ else if(t0&&w>4)wpm=Math.round(w/((Date.now()-t0)/60000));
+ $('#wpm').textContent=wpm;zone(wpm);$('#dot').style.left=Math.min(100,Math.max(0,(wpm/240)*100))+'%';
+ if(cstream){if(now-lastCamTick>=1000){lastCamTick=now;camAnalyze()}if(camTalking()&&now-lastCam>=15000){lastCam=now;camSnap()}}
+ if(pressure&&active&&(phase==='run'||phase==='speak')&&!speaking&&!busy&&!intr&&cnt($('#ans').value.trim())>=thr)interrupt()},500);
+
+let phase='off',tm=0,hist=[],gotStart=false,speaking=false,filter=false,spoken=new Set(),sid=0,spkTm=0,busy=false,bt=0,rt=0;const TOTAL=5;const BLOCKED='The mic is blocked. Open this page in its own Chrome tab (not inside the preview), tap the lock icon by the address bar, allow Microphone, then tap the button again.';
+let spDone=[],spBase='',spStart=0,spSecs=0,lastWord=0,spPause=0,spDead=0,spBuckets=[],spWin=[],pressure=false,nInt=0,plog=[],pi=null,intr=false,grace=0;const usedC=new Set();
+let dstream=null,dvid=null,shots=[],lastShot=0,shotIdx=0;
+function grab(){if(!dvid||!dvid.videoWidth)return '';const c=document.createElement('canvas'),k=Math.min(1,768/dvid.videoWidth);c.width=Math.round(dvid.videoWidth*k);c.height=Math.round(dvid.videoHeight*k);c.getContext('2d').drawImage(dvid,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.6).split(',')[1]||''}
+function snap(){lastShot=Date.now();const img=grab();if(!img)return;const all=spText().split(/\s+/).filter(Boolean);const narr=all.slice(shotIdx).join(' ').slice(-500);shotIdx=all.length;
+ shots.push({t:Math.round(spSecs+(spStart?(Date.now()-spStart)/1000:0)),narr,img});if(shots.length>6)shots.splice(1,1)}
+function stopShare(ended){try{dstream&&dstream.getTracks().forEach(t=>t.stop())}catch(e){}dstream=null;dvid=null;$('#share').textContent='🖥️ Share screen';if(ended)$('#shs').textContent='Screen sharing stopped.'}
+async function shareScreen(){try{stopShare();dstream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});dvid=document.createElement('video');dvid.muted=true;dvid.srcObject=dstream;await dvid.play();
+ dstream.getVideoTracks()[0].onended=()=>stopShare(true);$('#shs').textContent='Sharing. A snapshot every 20 seconds goes to the AI coach for the review (only if you set one up) and is not stored.';$('#share').textContent='⏹ Stop sharing';lastShot=Date.now();setTimeout(()=>{if(phase==='speak'&&!shots.length)snap()},1500)}
+ catch(e){stopShare();$('#shs').textContent='Screen share was cancelled or is not supported here. You can still narrate.'}}
+$('#share').onclick=()=>dstream?stopShare(true):shareScreen();
+let cstream=null,cam=[],cMot=[],cLum=[],cFace=[0,0],cprev=null,lastCam=0,lastCamTick=0,fdet=null,ccan=null;
+function camReset(){cam=[];cMot=[];cLum=[];cFace=[0,0];cprev=null;lastCam=0}
+function camTalking(){return !!(t0||(phase==='speak'&&spStart))}
+function camGrab(w){const v=$('#camv');if(!cstream||!v.videoWidth)return '';const c=document.createElement('canvas'),k=Math.min(1,w/v.videoWidth);c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.6).split(',')[1]||''}
+function camSnap(){const img=camGrab(512);if(!img)return;const t=phase==='speak'?spSecs+(spStart?(Date.now()-spStart)/1000:0):(t0?(Date.now()-t0)/1000:0);
+ cam.push({t:Math.round(t),narr:($('#ans').value||'').slice(-120),img});if(cam.length>6)cam.splice(1,1)}
+function camAnalyze(){const v=$('#camv');if(!cstream||!v.videoWidth)return;
+ if(!ccan){ccan=document.createElement('canvas');ccan.width=32;ccan.height=24}
+ const g=ccan.getContext('2d');g.drawImage(v,0,0,32,24);const d=g.getImageData(0,0,32,24).data,L=new Array(768);let sum=0;
+ for(let i=0;i<768;i++){L[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];sum+=L[i]}
+ cLum.push(sum/768);if(cLum.length>600)cLum.shift();
+ if(cprev&&camTalking()){let m=0;for(let i=0;i<768;i++)m+=Math.abs(L[i]-cprev[i]);cMot.push(m/768);if(cMot.length>1200)cMot.shift()}
+ cprev=L;
+ if(fdet&&camTalking()){fdet.detect(v).then(f=>{cFace[0]++;if(f.length)cFace[1]++}).catch(()=>{fdet=null})}
+ const lum=sum/768;$('#camst').textContent=lum<70?'Too dark. Face a light source.':lum>205?'Too bright. Reduce the light behind you.':'Lighting looks good'}
+function camMetrics(){if(!cstream&&!cam.length&&!cLum.length)return null;const av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null,lum=av(cLum),mot=av(cMot);
+ return{lum:lum==null?null:Math.round(lum),mot:mot==null?null:+mot.toFixed(1),faceIn:cFace[0]>=5?Math.round(100*cFace[1]/cFace[0]):null,frames:cam.length,samples:cMot.length}}
+function camWk(wk){const M=camMetrics();if(!M)return;
+ if(M.lum!=null&&M.lum<70)wk.push(['Too dark on camera','Drill: face a window or put a lamp behind your screen, so your face is brighter than the background.']);
+ else if(M.lum!=null&&M.lum>205)wk.push(['Overexposed on camera','Drill: move away from the window behind you or lower the light, so your face is not washed out.']);
+ if(M.faceIn!=null&&M.faceIn<80)wk.push(['Out of frame ('+(100-M.faceIn)+'% of the time)','Drill: centre your head and shoulders in the frame and stay square to the camera.']);
+ if(M.mot!=null&&M.samples>=10&&M.mot>8)wk.push(['Restless movement','Drill: plant your feet, keep your hands visible, and move only on purpose, for example on a key point.'])}
+function camHTML(){const M=camMetrics();if(!M||(M.lum==null&&!M.frames))return '';const b=[];
+ if(M.lum!=null)b.push('lighting '+(M.lum<70?'dark':M.lum>205?'too bright':'good'));
+ if(M.mot!=null&&M.samples>=10)b.push('movement '+(M.mot>8?'restless':M.mot>=2?'natural':'calm'));
+ if(M.faceIn!=null)b.push('in frame '+M.faceIn+'% of the time');
+ return '<div class="wk"><b style="color:var(--acc)">📷 Camera</b> <span class="mute">rough estimates from your device</span><br>'+b.join(', ')+(M.frames&&llmOn?'. '+M.frames+' snapshot'+(M.frames>1?'s':'')+' reviewed for eye contact and posture.':'.')+'</div>'}
+function camPayload(){return cam.length?{frames:cam.map(x=>({t:x.t,narr:x.narr,img:x.img})),metrics:camMetrics()}:null}
+function setCam(on){$('#cm').setAttribute('aria-pressed',!!on);$('#cm').textContent=on?'📷 Camera: on':'📷 Camera: off'}
+async function camOn(){try{if(cstream)return;cstream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false});
+ const v=$('#camv');v.srcObject=cstream;try{await v.play()}catch(e){}
+ try{if('FaceDetector' in window)fdet=new FaceDetector({fastMode:true,maxDetectedFaces:1})}catch(e){fdet=null}
+ $('#camwrap').hidden=false;setCam(true)}
+ catch(e){cstream=null;setCam(false);$('#camwrap').hidden=true;dbg('Camera blocked or not available. Allow camera access in the browser address bar, then try again.')}}
+function camOff(){try{cstream&&cstream.getTracks().forEach(t=>t.stop())}catch(e){}cstream=null;fdet=null;$('#camv').srcObject=null;$('#camwrap').hidden=true;setCam(false)}
+$('#cm').onclick=()=>cstream?camOff():camOn();
+function localContentHTML(){
+ const sp=mode==='speech'||mode==='demo',text=sp?spDone.join(' '):hist.filter(m=>m.role==='user').map(m=>m.text).join(' ');
+ const W=cnt(text);if(W<25)return '';const low=text.toLowerCase(),per=re=>(low.match(re)||[]).length,ok=[],wk=[],ws=low.split(/\s+/);
+ const nums=per(/\b\d+(?:\.\d+)?%?|\b(?:percent|million|thousand|hundred)\b/g),ev=per(/\b(for example|for instance|such as|because|according to|research|study|data shows?|evidence)\b/g);
+ if(sp){
+  const head=ws.slice(0,30).join(' '),tail=ws.slice(-45).join(' '),sign=per(/\b(first|firstly|second|secondly|third|thirdly|next|finally|lastly|in summary|to sum up|in conclusion|moving on)\b/g),you=per(/\b(you|your|you're)\b/g);
+  (/\b(imagine|picture this|what if|have you ever|did you know|story|last year|years ago)\b/.test(head)||/\d/.test(head))?ok.push('Your opening starts with a hook.'):wk.push(['Opening has no hook','Start with a question, a surprising number, or a one-sentence story before you introduce yourself.']);
+  sign>=3?ok.push('Clear signposting ('+sign+' markers).'):wk.push(['Hard to follow the structure','Name your points out loud: "First... Second... Finally..." so listeners always know where you are.']);
+  /\b(thank you|thanks for|in conclusion|to sum up|in summary|takeaway|remember|i ask you|join me|so please|let us|let's)\b/.test(tail)?ok.push('You closed with a clear ending.'):wk.push(['No clear close','End with one sentence that states the takeaway or the action you want, then stop.']);
+  you*100/W<1.5?wk.push(['Talking about the topic, not to the audience','Use "you" more: tell the audience what it means for them.']):ok.push('You speak directly to the audience.');
+ }else{
+  const I=per(/\bi\b/g),we=per(/\bwe\b/g),res=per(/\b(result|outcome|improved|increased|reduced|saved|launched|delivered|achieved|grew|cut)\b/g),act=per(/\bi (built|led|designed|wrote|implemented|decided|created|fixed|analysed|analyzed|ran|set up|chose|proposed)\b/g);
+  if(we>=4&&we>I*1.5)wk.push(['Saying "we" more than "I"','Drill: for each story, say what YOU personally decided or built before you describe the team.']);
+  if(res<2)wk.push(['Answers stop before the result','Drill: finish every story with the outcome, ideally with a number: what changed because of your action.']);
+  if(act>=2)ok.push('You describe concrete actions you took.')}
+ nums+ev>=Math.max(1,Math.round(W/100))?ok.push('You back claims with numbers or examples.'):wk.push(['Claims without proof','Back each main claim with one number, example or source.']);
+ const c={};(low.match(/[a-z]{5,}/g)||[]).filter(x=>!STOP.test(x)).forEach(x=>c[x]=(c[x]||0)+1);const top=Object.entries(c).sort((x,y)=>y[1]-x[1])[0];
+ if(top&&top[1]>=4)ok.push('Your most repeated idea is "'+top[0]+'" ('+top[1]+' times). Make sure that is your main message.');
+ return '<div class="wk"><b style="color:var(--ok)">What worked</b> <span class="mute">rule-based check, no AI</span><br>'+(ok.join('<br>')||'Nothing stood out yet. Try a longer answer.')+'</div>'+wk.slice(0,3).map(x=>'<div class="wk"><b>'+x[0]+'</b><br>'+x[1]+'</div>').join('')}
+const ENDRE=/\b(?:(?:end|finish) (?:my |the )?(?:speech|presentation|talk|pitch)|that(?:'?s| is) (?:my|the) (?:speech|presentation|talk|pitch)|(?:end|finish) session)(?: now| please)?\s*$/i;
+function showOpts(on){$('#speechopts').style.display=on?'block':'none';$('#share').hidden=mode!=='demo';$('#sptopic').placeholder=mode==='demo'?'What are you demoing? e.g. my attendance app':'Topic or purpose, e.g. investor pitch for a study app'}
+function menu(){showResume(true);showOpts(false);$('#done').hidden=true;pi=null;clearTimeout(tm);stopShare();phase='menu';$('#log').innerHTML='';$('#report').style.display='none';say('Which would you like to practice: interview, viva, negotiation, speech, or demo?')}
+function nAns(){return ans.filter(a=>!a.part).length}
+const E=x=>String(x==null?'':x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ---------- Pressure Mode: the coach deliberately cuts in mid-answer ---------- */
+function setPressure(on){pressure=!!on;$('#pm').setAttribute('aria-pressed',pressure);$('#pm').textContent=pressure?'🔥 Pressure Mode: on':'🧊 Pressure Mode: off';
+ $('#pmh').textContent=pressure?'The coach cuts in with curveball questions while you talk. How you recover is scored.':'Calm practice. The coach waits until you finish.';
+ try{localStorage.setItem('coachPressure',pressure?'1':'0')}catch(e){}if(phase==='run'||phase==='speak')armInt()}
+$('#pm').onclick=()=>setPressure(!pressure);
+try{setPressure(localStorage.getItem('coachPressure')==='1')}catch(e){setPressure(false)}
+function pmOf(c){if(/^(?:(?:ok|okay|please|coach) )?(?:turn |switch |set )?(?:on )?(?:pressure|hard)(?: mode)?(?: on)?$/.test(c)||/^(?:turn|switch) on (?:the )?pressure(?: mode)?$/.test(c))return 1;
+ if(/^(?:(?:ok|okay|please|coach) )?(?:turn |switch |set )?(?:pressure(?: mode)? off|calm(?: mode)?|no pressure)$/.test(c)||/^(?:turn|switch) off (?:the )?pressure(?: mode)?$/.test(c))return 0;return -1}
+function armInt(){thr=Infinity;if(!pressure)return;
+ if(phase==='run'){const n=nAns();if(n>=1&&(Math.random()<.6||(nInt===0&&n>=3)))thr=22+Math.floor(Math.random()*18)}
+ else if(phase==='speak'&&nInt<3)thr=(nInt?90:70)+Math.floor(Math.random()*60)}
+const CURVE={
+ interview:["Sorry to cut in. What would your last manager say you got wrong there?","Hold on. What was the actual number behind that?","Wait, back up. If that had failed, what would have broken first?","Stop there. Why did you make that call and not the obvious alternative?"],
+ viva:["Hold on. Why not the simpler alternative there?","Sorry to stop you. How would you prove that claim is actually true?","Wait. What happens to your approach when the data is noisy?","Stop there. Explain that to me as if I were new to the subject."],
+ negotiation:["Let me stop you. Somebody else is offering less. Why should I pay more?","Hold on. What are you willing to give up to get that?","Wait. If I said no to that figure right now, what would you do?","Pause there. Which part of that is actually non-negotiable?"],
+ demo:["Sorry, what exactly am I looking at right now?","Hold on. Why did you click that instead of the obvious option?","Wait. What happens if that fails in front of a customer?","Stop there. What is the one thing I should remember from this screen?"],
+ speech:["Sorry to interrupt. Can you put that in one plain sentence?","Quick question from the back. Who exactly is this for?","Hold on. What is your strongest evidence for that?","Excuse me, I am not convinced. Why should I care?"]};
+const CKW=["Hold on, you mentioned %. Why does that matter?","Sorry to cut in. What exactly do you mean by %?","Wait, back up. How do you know % works?"];
+function localCurve(t){const k=kwOf(t),L=CURVE[mode]||CURVE.interview,pool=(k&&Math.random()<.6)?CKW.map(x=>x.replace('%',k)):L;
+ const c=pool.filter(x=>!usedC.has(x)),src=c.length?c:pool;return src[Math.floor(Math.random()*src.length)]}
+async function llmInt(partial){try{const c=new AbortController(),tt=setTimeout(()=>c.abort(),6000);let r;
+ try{r=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},signal:c.signal,body:JSON.stringify({interrupt:true,mode,partial:partial.slice(-900),question:cur,img:mode==='demo'?grab():'',topic:(mode==='speech'||mode==='demo')?$('#sptopic').value.trim().slice(0,200):'',asked:[...usedC].slice(-6),resume:mode==='interview'?resumeText:''})})}finally{clearTimeout(tt)}
+ const j=await r.json().catch(()=>({}));if(r.ok&&j.say)return j.say}catch(e){}return null}
+async function interrupt(){
+ if(intr)return;intr=true;thr=Infinity;
+ const snap=$('#ans').value.trim();let q=llmOn?await llmInt(snap):null;if(!q)q=localCurve(snap);q=q.replace(/\s+/g,' ').trim();
+ intr=false;const now=$('#ans').value.trim();
+ if(!active||!pressure||speaking||busy||!(phase==='run'||phase==='speak')||cnt(now)<8){if(phase==='speak')armInt();return}
+ cut(now,q)}
+function cut(text,q){
+ clearTimeout(tm);const now=Date.now();nInt++;usedC.add(q);
+ if(phase==='speak'){spDone.push(text);spSecs+=Math.max(1,((lastWord||now)-(spStart||now))/1000);spStart=0;lastWord=0;spBase='';phase='qa'}
+ else{ans.push({q:cur,w:cnt(text),secs:Math.max(1,(now-(t0||now))/1000),f:(text.match(FILL)||[]).length,h:(text.match(HEDGE)||[]).length,part:1});
+  hist.push({role:'user',text});msg('me',text+' ...');hist.push({role:'coach',text:q});cur=q}
+ pi={q,end:0,lat:null};$('#ans').value='';t0=0;stopRec();grace=Date.now()+1800;say(q,'⚡ ')}
+function pStats(){if(!plog.length)return null;const a=plog.filter(x=>!x.skipped),g=a.filter(x=>!x.bar),lat=g.length?g.reduce((s,x)=>s+(x.lat||0),0)/g.length:0;
+ return{n:plog.length,answered:a.length,skipped:plog.length-a.length,talked_over:a.length-g.length,timed:g.length,lat:+lat.toFixed(1),w:a.reduce((s,x)=>s+x.w,0),fh:a.reduce((s,x)=>s+x.f+x.h,0)}}
+function pPen(P){return P?Math.min(12,Math.max(0,P.lat-3)*3)+P.skipped*4+(P.w&&P.fh/P.w>.12?4:0):0}
+function pWk(P,wk){if(!P)return;
+ if(P.skipped)wk.push(['Skipped '+P.skipped+' curveball'+(P.skipped>1?'s':''),'Drill: never skip. Give a one-sentence answer, even a partial one, then return to your point.']);
+ if(P.talked_over)wk.push(['Talked over the interruption','Drill: when cut in on, stop, pause, and answer the question before you return to your point.']);
+ if(P.timed&&P.lat>4)wk.push(['Slow to recover ('+P.lat+' s before answering)','Drill: buy two seconds with a bridge line, "Fair question, the short answer is...", then answer in one sentence.']);
+ else if(P.w&&P.fh/P.w>.12)wk.push(['Stumbled under interruption ('+P.fh+' fillers or hedges in '+P.w+' words)','Drill: answer an interruption in one sentence, pause, then stop. Shorter answers have fewer stumbles.'])}
+function pHTML(P){return P?'<div class="wk"><b style="color:var(--acc)">🔥 Pressure Mode</b><br>'+P.n+' interruption'+(P.n>1?'s':'')+'. '+(P.timed?'Average time to start answering: '+P.lat+' s.':'')+(P.talked_over?' You talked over '+P.talked_over+' interruption'+(P.talked_over>1?'s':'')+', which is left out of that average.':'')+(P.timed&&P.lat<=2.5&&!P.skipped&&!(P.w&&P.fh/P.w>.12)?' Quick, clean recovery.':'')+'</div>':''}
+function aiHTML(f){return '<div class="wk"><b style="color:var(--ok)">What worked</b><br>'+(f.strengths||[]).map(E).join('<br>')+'</div>'
+ +(f.improve||[]).map(x=>'<div class="wk"><b>'+E(x.issue)+'</b><br>'+E(x.fix)+'</div>').join('')
+ +(f.camera?'<div class="wk"><b style="color:var(--acc)">📷 On camera</b><br>'+E(f.camera)+'</div>':'')
+ +(f.recovery?'<div class="wk"><b style="color:var(--acc)">Under pressure</b><br>'+E(f.recovery)+'</div>':'')
+ +(f.better_answer?'<div class="wk"><b style="color:var(--acc)">'+(mode==='speech'||mode==='demo'?'A stronger opening for your '+(mode==='demo'?'demo':'speech'):'A stronger version of your weakest answer')+'</b><br>'+E(f.better_answer)+'</div>':'')}
+
+/* ---------- Speech / presentation mode ---------- */
+function startSpeech(){showResume(false);showOpts(true);shots=[];shotIdx=0;lastShot=0;phase='speak';spDone=[];spBase='';spStart=0;spSecs=0;lastWord=0;idleSince=0;spPause=0;spDead=0;spBuckets=[];spWin=[];bAct=0;bW0=0;
+ nInt=0;plog=[];pi=null;intr=false;usedC.clear();camReset();hist=[];ans=[];t0=0;fu=false;
+ $('#log').innerHTML='';$('#report').style.display='none';$('#ans').value='';$('#done').hidden=false;armInt();
+ dbg('Just start talking. Say "finish speech" or tap Finish when you are done.');
+ say((mode==='demo'?'Demo mode. Tap Share screen on the page, then walk me through it as if I were watching live. ':'Speech mode. ')+'Optionally set a topic and time target on screen. Then take a breath and begin whenever you are ready. I will stay quiet and listen'+(pressure?', though expect the odd audience question':'')+'. Say finish speech, or tap the button, when you are done.')}
+function resumeSpeech(skipped){
+ if(skipped&&pi){plog.push({q:pi.q,skipped:1,w:0,f:0,h:0});}pi=null;
+ phase='speak';spBase='';lastWord=0;spStart=0;spWin=[];idleSince=0;$('#ans').value='';armInt();
+ say(skipped?'No problem. Carry on with your speech.':'Thanks. Please carry on with your speech.')}
+function answerQA(text,T){
+ const secs=Math.max(1,(Date.now()-(T||Date.now()))/1000);
+ plog.push({q:pi.q,lat:pi.lat==null?0:pi.lat,bar:pi.bar?1:0,w:cnt(text),f:(text.match(FILL)||[]).length,h:(text.match(HEDGE)||[]).length,secs,a:text});msg('me',text);resumeSpeech(false)}
+function finishSpeech(){
+ if(phase!=='speak'&&phase!=='qa')return;clearTimeout(tm);if(dvid&&phase==='speak')snap();const now=Date.now();
+ if(phase==='speak'){const t=$('#ans').value.trim();if(t){spDone.push(t);if(spStart)spSecs+=Math.max(1,((lastWord||now)-spStart)/1000)}}
+ if(pi){plog.push({q:pi.q,skipped:1,w:0,f:0,h:0});pi=null}
+ $('#ans').value='';spStart=0;speechReport()}
+async function speechReport(){
+ phase='end';stopShare();stopRec();st('listening');try{speechSynthesis.cancel()}catch(e){}
+ $('#start').disabled=false;$('#done').hidden=true;
+ const R=$('#report');R.style.display='block';
+ const text=spDone.join(' ').trim(),W=cnt(text);
+ if(bAct>=8&&W)spBuckets.push(Math.max(0,Math.round((W-bW0)*60/bAct)));
+ if(W<20){R.innerHTML='<h2>Speech too short</h2><p>Speak for at least 20 words to get feedback. Say speech to try again.</p>';say('That was too short to review. Say speech to try again.');return}
+ const F=(text.match(FILL)||[]).length,H=(text.match(HEDGE)||[]).length,secs=Math.max(5,spSecs),wpm=Math.round(W/(secs/60)),fp=+(100*F/W).toFixed(1),hp=+(100*H/W).toFixed(1),tg=parseInt($('#sptarget').value)||0;
+ $('#tm').textContent=fmt(secs);
+ const bk=spBuckets,mean=bk.length?bk.reduce((x,y)=>x+y,0)/bk.length:0,sd=bk.length>=3?Math.sqrt(bk.reduce((x,y)=>x+(y-mean)*(y-mean),0)/bk.length):null;
+ const flat=sd!==null&&sd<10&&mean>0,wild=sd!==null&&sd>45,dev=wpm<120?120-wpm:wpm>160?wpm-160:0,P=pStats();
+ let sc=100-fp*4-Math.max(0,hp-1.5)*4-dev*.3-spDead*4-(flat?6:0)-(wild?6:0);
+ if(tg){const r=secs/tg;if(r>1.15)sc-=Math.min(15,(r-1.15)*40);else if(r<.7)sc-=Math.min(10,(.7-r)*30)}
+ sc-=pPen(P);const score=Math.max(35,Math.round(sc));
+ const wk=[];pWk(P,wk);
+ if(fp>4)wk.push(['Filler words ('+fp+' per 100 words)','Drill: pause silently at the end of every sentence instead of saying um. Record 60 seconds and count them.']);
+ if(wpm>160)wk.push(['Rushing ('+wpm+' words per minute)','Drill: read a paragraph aloud at 140 words per minute, then give your opening again without speeding up.']);
+ if(wpm&&wpm<110)wk.push(['Slow, low energy ('+wpm+' words per minute)','Drill: lead each point with a one-sentence headline, then move faster through the supporting detail.']);
+ if(hp>1.5)wk.push(['Hedging ('+H+' hedge phrases)','Drill: state each claim as a fact first, then add evidence. Ban "I think" for one full run.']);
+ if(spDead>=2)wk.push(['Long silences ('+spDead+' gaps over 6 seconds)','Drill: bridge with a signpost sentence like "The second point is..." instead of going quiet.']);
+ if(flat)wk.push(['Flat pace (barely varied)','Drill: slow down and pause for two seconds before your key line, then speed up through the detail.']);
+ if(wild)wk.push(['Erratic pace (swings between rushed and stalled)','Drill: mark two "slow down" points in your notes and practise holding 130 to 150 words per minute between them.']);
+ if(!spPause&&secs>45)wk.push(['No pauses for emphasis','Drill: add a two-second pause after your main claim and before your closing line.']);
+ if(tg&&secs>tg*1.15)wk.push(['Ran over time ('+fmt(secs)+' vs '+fmt(tg)+')','Drill: cut your weakest section, then rehearse with a timer set to 90 percent of your slot.']);
+ else if(tg&&secs<tg*.7)wk.push(['Finished early ('+fmt(secs)+' vs '+fmt(tg)+')','Drill: add one concrete example or story to your main point instead of speeding up.']);
+ if(mode==='demo'&&!shots.length)wk.push(['No screen shared','Drill: tap Share screen before you begin, so the coach can check that what you say matches what the viewer sees.']);
+ camWk(wk);
+ if(!wk.length)wk.push(['Strong delivery',pressure?'Raise the stakes: cut your time slot by 20 percent and run it again.':'Turn on Pressure Mode: same speech, but the audience cuts in with curveball questions.']);
+ const bars=bk.length?'<div style="margin:14px 0"><b>Pace by 15 seconds</b> <span class="mute">(steady zone 120 to 160 wpm)</span><div class="bars">'+bk.map(x=>'<i title="'+x+' wpm" style="height:'+Math.min(100,x/240*100)+'%;background:'+(x<120?'var(--warn)':x>160?'var(--bad)':'var(--ok)')+'"></i>').join('')+'</div></div>':'';
+ R.innerHTML='<h2>'+(mode==='demo'?'Demo':'Speech')+' report</h2><div class="ring" style="--p:'+score+'"><span>'+score+'</span></div>'
+  +'<p>'+fmt(secs)+(tg?' of '+fmt(tg):'')+' speaking, '+W+' words, average pace '+wpm+' wpm, '+F+' filler words, '+H+' hedges, '+spPause+' pauses'+(spDead?', '+spDead+' long silences':'')+'.</p>'
+  +bars+camHTML()+pHTML(P)+wk.slice(0,5).map(x=>'<div class="wk"><b>'+x[0]+'</b><br>'+x[1]+'</div>').join('')
+  +'<div class="wk"><b style="color:var(--acc)">Next session</b><br>'+(mode==='demo'?'Demo':'Speech')+' mode'+(pressure?' with Pressure Mode':'')+', focused on: '+wk[0][0].split(' (')[0].toLowerCase()+'. Say start over to run it.</div>';
+ const local='Your score is '+score+'. Next, work on '+wk[0][0].split(' (')[0].toLowerCase()+'. '+wk[0][1]+' Say start over to practice again.';
+ if(!llmOn){R.insertAdjacentHTML('beforeend',localContentHTML());say(local);return}
+ dbg('Reviewing your speech...');say('One moment while I review your speech.');
+ let f=null;try{const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,history:[],
+  speech:{text,topic:$('#sptopic').value.trim().slice(0,200),target:tg,qa:plog.map(x=>({q:x.q,a:(x.a||'').slice(0,600),lat:x.lat,skipped:!!x.skipped}))},
+  demo:{shots:shots.map(x=>({t:x.t,narr:x.narr,img:x.img}))},camera:camPayload(),
+  stats:{score,seconds:Math.round(secs),words:W,wpm,fillers:F,hedges:H,pauses:spPause,long_silences:spDead,pace_by_15s:spBuckets,target_seconds:tg,pressure:P}})});if(r.ok)f=await r.json()}catch(e){}
+ if(!f||!f.spoken){R.insertAdjacentHTML('beforeend',localContentHTML());say(local);return}
+ R.insertAdjacentHTML('beforeend',aiHTML(f));say('Your score is '+score+'. '+f.spoken+' Say start over to practice again.')}
+$('#done').onclick=finishSpeech;
+$('#end').onclick=()=>{if(active)menu()};
+if(!SR)dbg('This browser has no speech recognition. Open the page in Chrome or Edge.');
+function brainErr(m){$('#brain').style.color='var(--warn)';$('#brain').textContent='Coach AI problem ('+m+'). Using basic follow-ups.'}
+function brainOk(){$('#brain').style.color='var(--ok)';$('#brain').textContent='Adaptive AI coach: on'}
+async function llm(){try{const r=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,history:hist,turn:nAns(),after_int:!!(ans.length&&ans[ans.length-1].rec),total:TOTAL,resume:mode==='interview'?resumeText:''})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.say){brainErr(j.error||('HTTP '+r.status));return null}brainOk();return j.say}catch(e){brainErr('server not reachable');return null}}
+const STOP=/^(yourself|myself|something|because|really|about|would|should|could|there|their|which|these|those|thing|things|people|through|another|different|actually|basically|explain|project|working|worked|before|after|where|while|being|doing|using|maybe|probably|things|understand|believe|company|better)$/;
+function kwOf(t){return [...new Set((t.toLowerCase().match(/[a-z]{5,}/g)||[]).filter(x=>!STOP.test(x)))].sort((x,y)=>y.length-x.length)[0]||''}
+const usedFU=new Set();
+function localFollow(text,a){
+ const t=text.toLowerCase(),k=kwOf(text),topic=k?'your '+k:'that';
+ const num=/\d|percent|%|hundred|thousand|million|dollar|rupee|lakh/.test(t);
+ const we=(t.match(/\b(we|our|team)\b/g)||[]).length,me=(t.match(/\b(i|my|me)\b/g)||[]).length;
+ const opts=[];
+ if(a.w<12)opts.push(['short','That was too short for me to judge. Walk me through '+topic+' step by step.']);
+ if(a.h>=3)opts.push(['hedge','You hedged a lot there. What are you actually certain about when it comes to '+topic+'?']);
+ if(mode!=='negotiation'&&!num)opts.push(['num','You gave me no numbers. What was the measurable result of '+topic+'?']);
+ if(mode!=='negotiation'&&we>me)opts.push(['own','You said we a lot. What exactly did you personally do?']);
+ if(mode==='negotiation')opts.push(['neg','Give me one concrete reason that number is fair, and what you would give up to get it.']);
+ opts.push(['why','Why did you choose '+topic+' over the alternatives?'],['hard','What was the hardest part about '+topic+', and how did you deal with it?'],['redo','If you did '+topic+' again, what would you change?']);
+ const o=opts.find(x=>!usedFU.has(x[0]))||opts[0];usedFU.add(o[0]);return o[1]}
+async function next(){fu=false;if(pi){plog.push({q:pi.q,skipped:1,w:0,f:0,h:0});pi=null}if(nAns()>=TOTAL)return report();hist.push({role:'user',text:'(Skip that. Ask me something different.)'});dbg('Coach is thinking...');const r=await llm();if(r)return ask(r);qi++;qi<MODES[mode].qs.length?ask(MODES[mode].qs[qi]):report()}
+function showResume(on){$('#resume').style.display=on?'block':'none'}
+function rs(t,c){const e=$('#rs');e.textContent=t;e.className='rs '+(c||'')}
+function pick(k){$('#done').hidden=true;pi=null;clearTimeout(tm);if(k!=='demo')stopShare();mode=k;document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.k===k));showOpts(k==='speech'||k==='demo');
+ if(k==='speech'||k==='demo')return startSpeech();
+ if(k==='interview'&&!resumeText){phase='await';$('#log').innerHTML='';$('#report').style.display='none';showResume(true);
+  rs(llmOn?'Upload your resume (PDF, DOC or DOCX, max 5 MB). The interview is built only from it and starts as soon as it is read.':'Upload your resume as a .docx file (max 5 MB). The AI coach is off, so PDF reading and smart follow-ups are unavailable. '+llmWhy);
+  return say('For the interview I need your resume. Please upload it using the button on the screen. A PDF or Word file works. I will start as soon as it is read.')}
+ startRun(k)}
+function startRun(k){if(k==='interview'&&!resumeText)return pick(k);showResume(false);showOpts(false);$('#done').hidden=true;phase='run';qi=0;fu=false;ans=[];usedFU.clear();nInt=0;plog=[];pi=null;intr=false;usedC.clear();camReset();$('#log').innerHTML='';$('#report').style.display='none';cur=MODES[k].qs[0];hist=[{role:'coach',text:cur}];armInt();say(k==='interview'?'Thanks, I have read your resume'+(resumeName?', '+resumeName:'')+'. Let us begin. '+cur:'Starting '+MODES[k].n+' mode. '+cur)}
+async function submit(text){
+ const secs=Math.max(1,(Date.now()-(t0||Date.now()))/1000),w=text.split(/\s+/).length;
+ const a={q:cur,w,secs,f:(text.match(FILL)||[]).length,h:(text.match(HEDGE)||[]).length};
+ if(pi){a.rec=1;a.lat=pi.lat==null?0:pi.lat;plog.push({q:pi.q,lat:a.lat,bar:pi.bar?1:0,w,f:a.f,h:a.h,secs,a:text});pi=null}
+ ans.push(a);msg('me',text);hist.push({role:'user',text});
+ if(nAns()>=TOTAL)return report();
+ dbg('Coach is thinking...');
+ const r=await llm();if(r)return ask(r);
+ if(!fu){fu=true;return ask(localFollow(text,a))}
+ fu=false;qi++;qi<MODES[mode].qs.length?ask(MODES[mode].qs[qi]):report()}
+const MA=/\b(interview|viva|vivo|veva|veeva|vyva|wiva|negotiat\w*|speech|presentation|pitch|demo|demonstration)\b/;
+function modeOf(c){const m=c.match(MA);if(!m)return null;const x=m[1];return x.startsWith('negotiat')?'negotiation':x==='interview'?'interview':/^(speech|presentation|pitch)$/.test(x)?'speech':/^demo/.test(x)?'demo':'viva'}
+function handle(){
+ if(phase==='speak')return;
+ const raw=$('#ans').value.trim();if(!raw)return;
+ const c=raw.toLowerCase().replace(/[^a-z' ]/g,'').replace(/\s+/g,' ').trim(),short=c.split(' ').length<=6,T=t0;
+ $('#ans').value='';t0=0;busy=true;clearTimeout(bt);bt=setTimeout(()=>{busy=false},15000);stopRec();
+ const is=re=>short&&new RegExp("^(?:(?:ok|okay|please|coach) )?(?:"+re+")(?: please)?$").test(c);
+ if(is("start over|restart|main menu|practice again|go back"))return menu();
+ if(phase==='menu'||phase==='await'||phase==='end'){const cmm=c.match(/^(?:(?:ok|okay|please) )?(?:(?:turn|switch) )?(on |off )?camera(?: mode)?( on| off)?$/);
+  if(cmm){const on=(cmm[1]||cmm[2]||'on').trim()!=='off';on?camOn():camOff();return say('Camera '+(on?'on. Snapshots are used for the review only, and only if an AI coach is set up.':'off.')+(phase==='await'?' I am still waiting for your resume.':' Which would you like to practice?'))}
+  const pv=pmOf(c);if(pv>=0){setPressure(pv);return say('Pressure mode '+(pv?'on. I will cut in with curveball questions while you talk.':'off. Calm practice.')+(phase==='await'?' I am still waiting for your resume.':' Which would you like to practice?'))}}
+ if(phase==='qa'){
+  if(is("finish|end|end session|end speech|finish speech|stop"))return finishSpeech();
+  if(is("skip|skip it|skip that|skip question|never mind|next"))return resumeSpeech(true);
+  return answerQA(raw,T)}
+ if(phase==='await'){const k=modeOf(c);if(k)return pick(k);return say('I am waiting for your resume. Please upload it with the button on the screen, or say viva, negotiation or speech.')}
+ if(phase==='menu'||phase==='end'){const k=modeOf(c);if(k)return pick(k);return say('Say interview, viva, negotiation, speech, or demo.')}
+ const sw=c.match(/^(?:(?:switch|change) to |start |do |let'?s do )?(?:the )?(interview|viva|vivo|veva|veeva|vyva|wiva|negotiat\w*|speech|presentation|pitch|demo)(?: mode)?$/);if(sw)return pick(modeOf(sw[1]));
+ if(is("end(?: the)? session|end|stop|stop session|finish|finish session|that'?s all"))return report();
+ if(is("repeat|repeat that|repeat the question|say that again|come again|pardon"))return say(cur);
+ if(is("skip|skip it|skip this|skip that|skip question|skip this question|next|next question"))return next();
+ t0=T;submit(raw);t0=0}
+$('#start').onclick=()=>{if(active)return;active=true;gotStart=false;phase='menu';$('#start').hidden=true;$('#end').hidden=false;showResume(true);
+ try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch(e){}
+ startRec();say('Voice control is on. Which would you like to practice: interview, viva, negotiation, speech, or demo?');
+ setTimeout(()=>{if(!gotStart&&active){dbg('Chrome did not start the mic. Tap the button to retry.');active=false;$('#start').hidden=false;$('#start').textContent='🎙️ Retry microphone'}},6000)};
+
+$('#rlab').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#rfile').click()}});
+const R_=$('#resume');['dragover','dragenter'].forEach(ev=>R_.addEventListener(ev,e=>{e.preventDefault();R_.style.background='var(--glow)'}));['dragleave','drop'].forEach(ev=>R_.addEventListener(ev,e=>{e.preventDefault();R_.style.background=''}));
+R_.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)doUpload(f)});
+$('#rfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)doUpload(f)};
+$('#rpbtn').onclick=()=>{const t=$('#rpaste').value.trim();if(t.length<80){rs('Paste at least a few lines of your resume first.','err');return}doUpload(new File([t],'pasted-resume.txt',{type:'text/plain'}))};
+async function doUpload(f){
+ if(!f||uploading)return;
+ if(!/\.(pdf|docx?|txt|md)$/i.test(f.name)){rs('Please choose a PDF, DOC, DOCX or TXT file.','err');return}
+ if(f.size>5*1024*1024){rs('That file is over 5 MB. Please upload a smaller one.','err');return}
+ if(!f.size){rs('That file is empty. Please choose your resume again.','err');return}
+ uploading=true;rs('Reading '+f.name+'... ');
+ const fail=m=>{rs(m,'err');if(phase==='await')say('The upload did not work. '+m)};
+ try{
+  const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const u=String(r.result),i=u.indexOf(',');i<0?rej(new Error('read')):res(u.slice(i+1))};r.onerror=()=>rej(new Error('read'));r.readAsDataURL(f)});
+  const ctl=new AbortController(),tmo=setTimeout(()=>ctl.abort(),180000);
+  let r;try{r=await fetch('/api/resume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:f.name,data}),signal:ctl.signal})}finally{clearTimeout(tmo)}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.ok){return fail(j.error||('Upload failed (HTTP '+r.status+'). Check the server terminal for details.'))}
+  resumeText=j.text;resumeName=j.name||'';MODES.interview.qs=j.questions;
+  rs('Loaded '+f.name+(j.summary?' - '+j.summary:'')+(j.ai?'':' (basic questions, AI coach is off)')+'. Upload another file to replace it.','ok');
+  if(phase==='await')startRun('interview');
+ }catch(x){
+  console.error('resume upload',x);
+  if(x&&x.message==='read')fail('Could not read that file from your computer. Please try again or pick another file.');
+  else if(x&&x.name==='AbortError')fail('Reading the file took too long. Try a smaller PDF or a .docx file.');
+  else if(x instanceof TypeError)fail('Could not reach the server. Make sure server.py is running, and open http://localhost:8000 in the browser (not by double-clicking index.html).');
+  else fail('Something went wrong: '+((x&&x.message)||x));
+ }
+ finally{uploading=false}}
+
+async function report(){
+ phase='end';stopRec();st('listening');try{speechSynthesis.cancel()}catch(e){}pi=null;
+ $('#start').disabled=false;$('#done').hidden=true;
+ const R=$('#report');R.style.display='block';const n=nAns();
+ if(!n){R.innerHTML='<h2>No answers yet</h2><p>Start a session and submit at least one answer to get feedback.</p>';say('No answers yet. Say interview, viva, negotiation, or speech to begin.');return}
+ const W=ans.reduce((s,a)=>s+a.w,0),F=ans.reduce((s,a)=>s+a.f,0),H=ans.reduce((s,a)=>s+a.h,0);
+ const long=ans.filter(a=>a.w>=10),lw=long.reduce((s,a)=>s+a.w,0),ls=long.reduce((s,a)=>s+a.secs,0);
+ const wpm=ls?Math.round(lw/(ls/60)):0,fp=+(100*F/W).toFixed(1),short=ans.filter(a=>a.w<20&&!a.part&&!a.rec).length,P=pStats();
+ const dev=wpm&&wpm<120?120-wpm:wpm>160?wpm-160:0;
+ const score=Math.max(35,Math.round(100-fp*4-H*3-dev*.3-short*6-pPen(P)));
+ const wk=[];pWk(P,wk);
+ if(fp>4)wk.push(['Filler words ('+fp+' per 100 words)','Drill: answer three questions in 45 seconds each and pause silently instead of saying um.']);
+ if(wpm>160)wk.push(['Rushing ('+wpm+' words per minute)','Drill: read a paragraph aloud at 140 words per minute, then answer without speeding up.']);
+ if(wpm&&wpm<110)wk.push(['Slow, low energy ('+wpm+' words per minute)','Drill: answer with a one-sentence headline first, then two supporting points.']);
+ if(H>=3)wk.push(['Hedging ('+H+' hedge phrases)','Drill: lead with the answer, then explain. Ban "I think" for one full round.']);
+ if(short>=2)wk.push(['Answers too short ('+short+' under 20 words)','Drill: use Situation, Action, Result on every answer and aim for 30 to 60 seconds.']);
+ camWk(wk);
+ if(!wk.length)wk.push(['Strong delivery',pressure?'Raise the stakes: shorter answers and harder curveballs. Run it again.':'Turn on Pressure Mode: same questions, but the coach cuts in mid-answer with curveballs.']);
+ R.innerHTML='<h2>'+MODES[mode].n+' report</h2><div class="ring" style="--p:'+score+'"><span>'+score+'</span></div>'
+ +'<p>'+n+' answers, '+W+' words, average pace '+(wpm||'n/a')+' wpm, '+F+' filler words.</p>'+camHTML()+pHTML(P)
+ +wk.slice(0,5).map(x=>'<div class="wk"><b>'+x[0]+'</b><br>'+x[1]+'</div>').join('')
+ +'<div class="wk"><b style="color:var(--acc)">Next session</b><br>'+MODES[mode].n+' mode'+(pressure?' with Pressure Mode':'')+', focused on: '+wk[0][0].split(' (')[0].toLowerCase()+'. Say start over to run it.</div>';const local='Your score is '+score+'. Next, work on '+wk[0][0].split(' (')[0].toLowerCase()+'. '+wk[0][1]+' Say start over to practice again.';
+ if(!llmOn||n<2){R.insertAdjacentHTML('beforeend',localContentHTML());say(local);return}
+ dbg('Reviewing your answers...');say('One moment while I review your answers.');
+ let f=null;try{const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({camera:camPayload(),mode,history:hist,resume:mode==='interview'?resumeText:'',stats:{score,answers:n,words:W,wpm,fillers:F,hedges:H,short_answers:short,pressure:P,interruptions:plog.map(x=>({q:x.q,lat:x.lat,skipped:!!x.skipped}))}})});if(r.ok)f=await r.json()}catch(e){}
+ if(!f||!f.spoken){R.insertAdjacentHTML('beforeend',localContentHTML());say(local);return}
+ R.insertAdjacentHTML('beforeend',aiHTML(f));
+ say('Your score is '+score+'. '+f.spoken+' Say start over to practice again.')
+}
+</script></body></html>
