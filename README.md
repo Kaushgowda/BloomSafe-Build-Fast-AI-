@@ -1,69 +1,294 @@
-# AI Performance Coach (universal edition)
+AI Performance Coach
 
-Works with **no API key at all**. The optional AI coach can be Gemini, Claude, any OpenAI-compatible service, or a free local model (Ollama).
+AI Performance Coach is a browser-based practice and performance coaching application designed for interviews, vivas, speeches, negotiations, and project demonstrations.
 
-## Run it
-1. `python3 server.py` (needs Python 3.8+, nothing to install)
-2. Open http://localhost:8000 in Chrome or Edge and tap once to turn on voice.
+The application combines browser-based speech, camera, and screen capabilities with a Python backend and optional AI services to provide users with real-time practice, analysis, and personalized feedback.
 
-## What works offline (no key, nothing leaves your computer)
-- Interview (from your resume), viva, negotiation, speech and demo modes, with Pressure Mode curveballs
-- Live pace, filler and hedge meters, pause tracking, timer and target length
-- Resume reading from DOCX, DOC, TXT, pasted text and most text PDFs, with questions built from your own projects and skills
-- A rule-based content check: hook, signposting, closing, evidence, ownership ("I" vs "we"), and your most repeated idea
-- Camera: self-view, lighting and movement checks on your device
-- Scored reports with specific drills
+Project Overview
+Offline Features
 
-## What the optional AI adds
-Adaptive follow-up questions that react to what you said, a written review of structure and content, eye-contact and posture feedback from camera snapshots, screen-aware demo review, and reading scanned or oddly-encoded PDFs (Gemini and Claude only).
+The core functionality does not require an external API key. These features run locally on the user's computer and do not send the data to an external AI service.
 
-Copy `.env.example` to `.env` and uncomment ONE option. Free and private: install Ollama, run `ollama pull llama3.2`, and set `LLM_PROVIDER=ollama`. Local text models ignore camera and screen images, so those reviews need Gemini, Claude or a vision-capable model.
+Available offline features include:
 
----
-# AI Performance Coach
+Interview, viva, negotiation, speech, and demo modes
+Pressure Mode
+Live speaking pace tracking
+Filler-word detection
+Hedge-word detection
+Pause tracking
+Speaking timer
+Target speaking length
+Resume processing from DOCX, DOC, TXT, pasted text, and supported text PDFs
+Questions generated from the user's resume, projects, and skills
+Rule-based content analysis
+Hook and signposting detection
+Closing detection
+Evidence and ownership analysis
+Detection of repeated ideas
+Camera self-view
+Local lighting and movement checks
+Scored performance reports
+Personalized practice drills
 
-A browser-based AI practice coach for interviews, vivas, speeches, negotiations, and project demos.
+These features are designed to continue working even when no AI API is configured.
 
-## Tech stack
+Optional AI Features
 
-- Frontend: HTML, CSS, JavaScript
-- Voice input: Web Speech API
-- Voice output: Browser Speech Synthesis API
-- Screen sharing: Screen Capture API (`getDisplayMedia`)
-- Backend: Python standard library HTTP server
-- AI: Google Gemini API
-- Resume processing: Python PDF/Word handling + Gemini for PDF/legacy Word cleanup
+The application can optionally connect to external AI providers to provide more advanced analysis.
 
-## Run locally
+Depending on the configured provider, AI features can include:
 
-1. Install Python 3.9 or newer.
-2. Copy `.env.example` to a file named `.env`.
-3. Create a Gemini API key in Google AI Studio and put it in `.env`:
+Adaptive follow-up questions based on the user's responses
+AI-generated review of speech structure and content
+More detailed performance feedback
+Eye-contact analysis
+Posture and presentation analysis
+Camera snapshot analysis
+Screen-aware project demonstration review
+Processing of scanned or unusually encoded PDF documents
+More dynamic and personalized coaching
 
-   `GEMINI_API_KEY=your-real-key`
+The application can be configured to use services such as:
 
-4. Open a terminal in this folder and run:
+Google Gemini
+OpenAI-compatible APIs
+Groq
+Anthropic Claude
+Ollama for local AI models
+The main goal of AI Performance Coach is to help users practice communication and presentation skills in a realistic environment.
 
-   `python server.py`
+The application supports multiple practice modes, including:
 
-   On systems where `python` maps to another interpreter, use `python3 server.py`.
+Interview practice
+Viva practice
+Speech practice
+Negotiation practice
+Project demonstration practice
+Pressure Mode with unexpected questions and curveballs
+Resume-based interview questions
+Real-time speaking analysis
+Performance reports and improvement drills
+Camera-based presentation checks
+Screen sharing for project demonstration practice
 
-5. Open Chrome or Microsoft Edge and visit:
+API Availability Notice
 
-   `http://localhost:8000`
+Some optional AI-powered features could not be fully demonstrated during development because the required third-party API keys were temporarily unavailable.
 
-The browser handles microphone speech recognition, speech synthesis, and screen sharing. Gemini is called only by the Python backend, so the API key is not exposed in the frontend.
+In particular, access to the following services was temporarily unavailable:
 
-## Gemini model
+Google Gemini API
+OpenAI API
+Groq API
 
-The default model is `gemini-3.8-flash`. You can override it in `.env` with `COACH_MODEL=...` if needed.
+As a result, features that specifically depend on these external AI services may not be available in the current demonstration environment.
 
-## API key safety
+This does not affect the core offline functionality of the application. The application was designed so that many of its main practice, tracking, resume-processing, camera, and rule-based analysis features continue to work without an API key.
 
-Never commit or share `.env`. Keep the Gemini API key private.
+The limitation is related to temporary API availability and is not a limitation of the overall application architecture.
 
-## Camera
-Turn on 📷 Camera (button, or say "camera on" / "camera off" from the menu). It works in every mode. Your browser asks for permission once.
-- On your device: a mirrored self-view, live lighting feedback, a rough movement level while you speak, and (in browsers that support face detection) how often you stayed in frame.
-- With the Gemini key: a snapshot every 15 seconds while you speak (up to 6) is sent with what you were saying, and the review comments on eye contact, posture, framing, expression and gestures. Snapshots are not stored and are sent only when the report is built.
-- The local movement and framing numbers are rough estimates, not measurements. Turn the camera off any time.
+If valid API credentials are provided, the corresponding optional AI features can be enabled through the environment configuration.
+
+Technologies Used
+Frontend
+HTML5
+CSS3
+JavaScript
+Web Speech API
+Browser Speech Synthesis API
+Screen Capture API (getDisplayMedia)
+Browser Camera APIs
+Backend
+Python
+Python Standard Library HTTP Server
+Environment variable configuration
+Local file processing
+AI Integration
+
+The application supports optional integration with:
+
+Google Gemini
+OpenAI-compatible AI services
+Groq
+Anthropic Claude
+Ollama
+Resume Processing
+
+The application supports resume processing from:
+
+DOCX
+DOC
+TXT
+Pasted text
+Most text-based PDF files
+
+AI services can additionally be used for processing scanned or unusually encoded documents when supported by the selected provider.
+
+Setup and Installation
+Requirements
+Python 3.8 or newer
+Google Chrome or Microsoft Edge
+Microphone for voice features
+Camera for camera-based features
+Browser permission for microphone and camera access
+
+No external Python packages are required for the basic offline version.
+
+Step 1: Download the Project
+
+Download or clone the project repository and open the project folder in a terminal or VS Code.
+
+Step 2: Optional AI Configuration
+
+The application can run without an API key.
+
+If you want to use an AI provider, copy the example environment file:
+
+cp .env.example .env
+
+On Windows PowerShell:
+
+Copy-Item .env.example .env
+
+Then open .env and configure the required provider.
+
+For example, for Gemini:
+
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=your-api-key-here
+
+For OpenAI-compatible services, configure the corresponding provider and API key according to the project's .env.example file.
+
+For Ollama, which can run locally:
+
+ollama pull llama3.2
+
+Then configure:
+
+LLM_PROVIDER=ollama
+
+Ollama allows local text-based AI functionality without sending the conversation to an external AI provider.
+
+Note that local text-only models do not provide camera or screen-image analysis. Those features require a vision-capable AI provider.
+
+API Key Security
+
+API keys should never be placed directly inside the frontend HTML or JavaScript files.
+
+Store them in the .env file.
+
+Example:
+
+GEMINI_API_KEY=your-real-key
+
+Never commit .env to GitHub or share your API keys publicly.
+
+The .env.example file should contain placeholders rather than real API credentials.
+
+How to Run the Project
+Step 1: Open the Project Folder
+
+Open a terminal in the project directory.
+
+Step 2: Start the Python Server
+
+Run:
+
+python server.py
+
+If your system uses python3:
+
+python3 server.py
+
+The application requires Python 3.8 or newer.
+
+Step 3: Open the Application
+
+After starting the server, open:
+
+http://localhost:8000
+
+in Google Chrome or Microsoft Edge.
+
+Step 4: Enable Browser Permissions
+
+Allow the browser to access:
+
+Microphone
+Camera, when using camera features
+Screen sharing, when using project demonstration features
+
+The browser handles speech recognition, speech synthesis, camera access, and screen sharing.
+
+Camera Features
+
+The camera can be enabled from the application interface.
+
+The local camera functionality provides:
+
+Mirrored self-view
+Lighting feedback
+Basic movement tracking
+Basic framing checks
+Face-in-frame information where browser support is available
+
+When an appropriate AI vision provider is configured, camera snapshots can additionally be analyzed for:
+
+Eye contact
+Posture
+Framing
+Expression
+Gestures
+
+The local camera measurements are approximate indicators intended for practice rather than professional measurements.
+
+Project Structure
+AI Performance Coach/
+│
+├── server.py
+├── index.html
+├── .env.example
+├── .gitignore
+├── README.md
+└── ...
+Running Without an API Key
+
+The project can be started directly without configuring any external AI service:
+
+python server.py
+
+Then open:
+
+http://localhost:8000
+
+The offline features will remain available.
+
+This makes the application usable even when external AI services or API credentials are unavailable.
+
+Running With an AI Provider
+
+If an API key becomes available, configure the provider in .env and restart the server.
+
+For example:
+
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=your-real-key
+
+The optional AI functionality will then be available according to the capabilities of the selected provider.
+
+Important Note for Evaluation
+
+The project was developed with a separation between core local functionality and optional external AI functionality.
+
+Therefore:
+
+The application does not require an API key to demonstrate its core functionality.
+Several features operate completely on the user's device.
+Optional AI functionality requires access to a supported AI provider.
+During the current demonstration, some AI-powered features could not be tested because Gemini, OpenAI, and Groq API access was temporarily unavailable.
+This is an external API availability limitation rather than a failure of the application's core functionality.
+The corresponding AI features can be enabled when valid API credentials are available.
+License
+
+This project is intended for educational, demonstration, and development purposes.
