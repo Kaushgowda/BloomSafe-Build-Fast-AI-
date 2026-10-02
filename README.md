@@ -6,7 +6,7 @@ The application combines browser-based speech, camera, and screen capabilities w
 
 ## Project Overview
 
-The main goal of AI Performance Coach is to help users practice communication and presentation skills in a realistic environment.
+The AI Performance Coach allows users to practice communication and presentation skills through an interactive web interface.
 
 The application supports multiple practice modes, including:
 
@@ -22,7 +22,9 @@ The application supports multiple practice modes, including:
 - Camera-based presentation checks
 - Screen sharing for project demonstration practice
 
-## Offline Features
+The project is designed with a flexible architecture where the core functionality can operate locally, while optional AI services can be configured when API access is available.
+
+### Offline Features
 
 The core functionality does not require an external API key. These features run locally on the user's computer and do not send the data to an external AI service.
 
@@ -50,7 +52,7 @@ Available offline features include:
 
 These features are designed to continue working even when no AI API is configured.
 
-## Optional AI Features
+### Optional AI Features
 
 The application can optionally connect to external AI providers to provide more advanced analysis.
 
@@ -66,31 +68,13 @@ Depending on the configured provider, AI features can include:
 - Processing of scanned or unusually encoded PDF documents
 - More dynamic and personalized coaching
 
-The application can be configured to use services such as:
+The application can be configured to use supported AI services such as:
 
 - Google Gemini
 - OpenAI-compatible APIs
-- Groq
 - Anthropic Claude
+- Groq
 - Ollama for local AI models
-
-## API Availability Notice
-
-Some optional AI-powered features could not be fully demonstrated during development because the required third-party API keys were temporarily unavailable.
-
-In particular, access to the following services was temporarily unavailable:
-
-- Google Gemini API
-- OpenAI API
-- Groq API
-
-As a result, features that specifically depend on these external AI services may not be available in the current demonstration environment.
-
-This does not affect the core offline functionality of the application. The application was designed so that many of its main practice, tracking, resume-processing, camera, and rule-based analysis features continue to work without an API key.
-
-The limitation is related to temporary API availability and is not a limitation of the overall application architecture.
-
-If valid API credentials are provided, the corresponding AI features can be enabled through the environment configuration.
 
 ## Technologies Used
 
@@ -108,18 +92,21 @@ If valid API credentials are provided, the corresponding AI features can be enab
 
 - Python
 - Python Standard Library HTTP Server
+- HTTP APIs
 - Environment variable configuration
 - Local file processing
 
-### AI Integration
+### AI / LLM Integration
 
 The application supports optional integration with:
 
 - Google Gemini
 - OpenAI-compatible AI services
-- Groq
 - Anthropic Claude
+- Groq
 - Ollama
+
+The available AI functionality depends on the configured provider and its supported capabilities.
 
 ### Resume Processing
 
@@ -131,7 +118,7 @@ The application supports resume processing from:
 - Pasted text
 - Most text-based PDF files
 
-AI services can additionally be used for processing scanned or unusually encoded documents when supported by the selected provider.
+AI services can additionally be used for processing scanned or unusually encoded PDF documents when supported by the selected provider.
 
 ## Setup and Installation
 
@@ -145,15 +132,11 @@ AI services can additionally be used for processing scanned or unusually encoded
 
 No external Python packages are required for the basic offline version.
 
-### Step 1: Download the Project
+### 1. Download or Clone the Project
 
-Download or clone the project repository and open the project folder in a terminal or VS Code.
+Download or clone the project repository and open the project folder in VS Code or another code editor.
 
-### Step 2: Optional AI Configuration
-
-The application can run without an API key.
-
-If you want to use an AI provider, copy the example environment file:
+### 2. Open the Project Directory
 
 ```bash
-cp .env.example .env
+cd ai-performance-coach
